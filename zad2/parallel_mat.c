@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <math.h> 
 
 double **A;
 double **B;
 double **C;
 pthread_mutex_t lock;
 float global_sum=0.0;
+float frobenius_norm=0.0;
 
 struct helpfulInfo{
     int m;
@@ -48,6 +50,7 @@ void *test_func(void* hi){
         }
         pthread_mutex_lock(&lock);
         global_sum = global_sum + local_sum;
+        frobenius_norm = frobenius_norm + local_sum*local_sum;
         pthread_mutex_unlock(&lock);
     
     C[m_result_index][n_result_index]=local_sum;
@@ -59,23 +62,37 @@ void *test_func(void* hi){
 
 int main(int argc, char* argv[])
 {
+
+    printf("Wywolanie:\n./program [ile_watkow] [plik z mat A] [plik z mat B]\n");
+    printf("Domyslnie pliki: A.txt B.txt\n");
+
     FILE *fpa;
     FILE *fpb;
     int ma, mb, na, nb;
     int i, j;
     double x;
 
-    if(argc<2){
-        printf("Prosze przekazac N watkow jako argument.\n");
+    int N = 2;
+    char *fileA = "A.txt";
+    char *fileB = "B.txt";
+
+    if(argc>3){
+        N=atoi(argv[1]);
+        fileA = argv[2];
+        fileB = argv[3];
+    }
+    else if(argc>1){
+        N = atoi(argv[1]);
         return -1;
     }
-    //ILOSC WATKOW
-    int N = atoi(argv[1]);
+    else{
+        printf("Nie podano argumentow wywolania programu. Przyjmuje wartosci domyslne.\n");
+    }
 
-    printf("Ilosc uzytych watkow: [%d]\n",N);
+    printf("-> Ilosc uzytych watkow: [%d]\n-> Plik mat A: [%s]\n-> Plik mat B: [%s]\n",N,fileA, fileB);
 
-    fpa = fopen("A.txt", "r");
-    fpb = fopen("B.txt", "r");
+    fpa = fopen(fileA, "r");
+    fpb = fopen(fileB, "r");
     if( fpa == NULL || fpb == NULL )
     {
         perror("błąd otwarcia pliku");
@@ -189,7 +206,8 @@ int main(int argc, char* argv[])
     printf("C:\n");
     print_matrix(C,ma,nb);
 
-    printf("Suma całkowita elementow macierzy, policzona przez wątki: %f\n",global_sum);
+    printf("Suma całkowita elementow macierzy C (policzona przez wątki): %f\n",global_sum);
+    printf("Norma Frobeniusa macierzy C: %f\n",sqrt(frobenius_norm));
 
     for(i=0; i<na; i++)
     {

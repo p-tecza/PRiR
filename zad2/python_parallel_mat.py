@@ -1,7 +1,26 @@
 import threading
+import sys
+import math
+
+print("Argumenty do przekazana: [N_watkow] [Plik z mat A] [Plik z mat B]")
+
+N = 4
+fileA="A.txt"
+fileB="B.txt"
+
+args_it=0
+for argument in sys.argv:
+    if(args_it==1):
+        N=int(argument)
+    elif(args_it==2):
+        fileA=argument
+    elif(args_it==3):
+        fileB=argument
+    args_it+=1
+
+print("N_Threads:", N,"| A_file:",fileA, "| B_file:",fileB)
 
 #how many threads
-N = 4
 
 class myThread (threading.Thread):
    def __init__(self, s_index, e_index, n, m, it,thread_number):
@@ -19,8 +38,9 @@ class myThread (threading.Thread):
 
 lock=threading.Lock()
 global_sum=0
-fa = open("A.txt","r")
-fb = open("B.txt","r")
+frobenius_norm=0
+fa = open(fileA,"r")
+fb = open(fileB,"r")
 ma = int(fa.readline())
 na = int(fa.readline())
 mb = int(fb.readline())
@@ -93,8 +113,10 @@ def calculate(s_index,e_index,n, m,it):
         for j in range(0,it):
             local_sum = local_sum + A[m_result_index][j]*B[j][n_result_index]
         global global_sum
+        global frobenius_norm
         lock.acquire()
         global_sum+=local_sum
+        frobenius_norm=frobenius_norm+local_sum*local_sum
         lock.release()
         C[m_result_index][n_result_index]=local_sum; 
         local_sum=0
@@ -112,4 +134,5 @@ for tr in threads:
 print("C:")
 for row in C:
     print(row)
-print("Suma globalna: ",global_sum)
+print("Suma globalna: ", global_sum)
+print("Norma Frobeniusa: ", math.sqrt(frobenius_norm))
