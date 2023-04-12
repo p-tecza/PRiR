@@ -1,0 +1,7 @@
+mpiexec -n 5 ./integrate 0.0 10.0 12
+./integrate 1.0 10.0 10
+
+------------------------
+mpiexec -n 2 ./send_recv
+mpicc integrate.c
+mpiexec -n num_procs integrate begin end num_points
